@@ -3,29 +3,24 @@
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
-#include <limits>
-#include <locale>
-#include <chrono> // Для измерения времени
-#include <random> // Добавляем для современного генератора случайных чисел
 
 using namespace std;
-using namespace std::chrono; // Для измерения времени
 
-// Функция для записи массива в файл
+// функция для записи массива в файл
 void saveToFile(const string& filename, const vector<int>& arr) {
     ofstream outFile(filename);
-    if (!outFile) {
-        cerr << "Ошибка при открытии файла " << filename << endl;
+    if (!outFile.is_open()) {
+        cout << "Ошибка открытия файла!" << endl;
         return;
     }
-    for (int num : arr) {
-        outFile << num << " ";
+    for (size_t i = 0; i < arr.size(); i++) {
+        outFile << arr[i] << " ";
     }
     outFile.close();
-    cout << "Массив сохранён в файл: " << filename << endl;
+    cout << "Массив сохранен в файл: " << filename << endl;
 }
 
-// Шейкерная сортировка с подсчётом операций и времени
+// Шейкерная сортировка
 void cocktailSort(vector<int>& arr, int& comparisons, int& swaps) {
     bool swapped = true;
     int start = 0;
@@ -37,10 +32,12 @@ void cocktailSort(vector<int>& arr, int& comparisons, int& swaps) {
         swapped = false;
 
         // Проход слева направо
-        for (int i = start; i < end; ++i) {
+        for (int i = start; i < end; i++) {
             comparisons++;
             if (arr[i] > arr[i + 1]) {
-                swap(arr[i], arr[i + 1]);
+                int temp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = temp;
                 swaps++;
                 swapped = true;
             }
@@ -52,10 +49,12 @@ void cocktailSort(vector<int>& arr, int& comparisons, int& swaps) {
         end--;
 
         // Проход справа налево
-        for (int i = end - 1; i >= start; --i) {
+        for (int i = end; i >= start; i--) {
             comparisons++;
             if (arr[i] > arr[i + 1]) {
-                swap(arr[i], arr[i + 1]);
+                int temp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = temp;
                 swaps++;
                 swapped = true;
             }
@@ -65,55 +64,45 @@ void cocktailSort(vector<int>& arr, int& comparisons, int& swaps) {
     }
 }
 
-// Генерация случайного массива в заданном диапазоне
-
+// Генерация случайного массива
 vector<int> generateRandomArray(int size, int minVal, int maxVal) {
     vector<int> arr(size);
+    srand(time(0)); // Инициализация генератора случайных чисел
 
-    // Инициализация генератора случайных чисел
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<int> dist(minVal, maxVal);
-
-    for (int i = 0; i < size; ++i) {
-        arr[i] = dist(gen);
+    for (int i = 0; i < size; i++) {
+        // Генерация числа в заданном диапазоне
+        arr[i] = minVal + rand() % (maxVal - minVal + 1);
     }
     return arr;
 }
 
 int main() {
-    setlocale(LC_ALL, "Russian");
-
+    setlocale(0, ""); // русский язык
     vector<int> arr;
     int choice;
-    int comparisons = 0;
-    int swaps = 0;
 
-    do {
-        cout << "\n=== Меню шейкерной сортировки ===\n";
+    while (true) {
+        cout << "\nМеню шейкерной сортировки:\n";
         cout << "1. Ввести массив вручную\n";
         cout << "2. Сгенерировать случайный массив\n";
-        cout << "3. Отсортировать массив и сохранить в файлы\n";
-        cout << "4. Вывести заполненый массив\n";
+        cout << "3. Отсортировать массив\n";
+        cout << "4. Показать массив\n";
         cout << "5. Выход\n";
         cout << "Выберите действие: ";
         cin >> choice;
 
-        switch (choice) {
-        case 1: {
-            int n, num;
+        if (choice == 1) {
+            int n;
             cout << "Введите количество элементов: ";
             cin >> n;
-            arr.clear();
+            arr.resize(n);
             cout << "Введите элементы: ";
-            for (int i = 0; i < n; ++i) {
-                cin >> num;
-                arr.push_back(num);
+            for (int i = 0; i < n; i++) {
+                cin >> arr[i];
             }
             saveToFile("unsorted.txt", arr);
-            break;
         }
-        case 2: {
+        else if (choice == 2) {
             int size, minVal, maxVal;
             cout << "Введите размер массива: ";
             cin >> size;
@@ -122,62 +111,51 @@ int main() {
             cout << "Введите максимальное значение: ";
             cin >> maxVal;
             arr = generateRandomArray(size, minVal, maxVal);
-            cout << "Сгенерированный массив: ";
+            cout << "Массив создан: ";
             for (int num : arr) cout << num << " ";
             cout << endl;
             saveToFile("unsorted.txt", arr);
-            break;
         }
-        case 3: {
+        else if (choice == 3) {
             if (arr.empty()) {
-                cout << "Массив пуст! Сначала введите или сгенерируйте его.\n";
+                cout << "Массив пуст!" << endl;
+                continue;
             }
-            else {
-                vector<int> sortedArr = arr;
 
-                // Начало измерения времени
-                auto start_time = high_resolution_clock::now();
+            int comparisons = 0, swaps = 0;
 
-                cocktailSort(sortedArr, comparisons, swaps);
+            // Измерение времени алгоритма
+            clock_t start = clock();
+            cocktailSort(arr, comparisons, swaps);
+            clock_t end = clock();
 
-                // Конец измерения времени
-                auto end_time = high_resolution_clock::now();
-                auto duration = duration_cast<microseconds>(end_time - start_time);
+            double time = (double)(end - start) / CLOCKS_PER_SEC * 1000000; // микросекунды
 
-                saveToFile("sorted.txt", sortedArr);
-                cout << "Исходный массив сохранён в unsorted.txt\n";
-                cout << "Отсортированный массив сохранён в sorted.txt\n";
-
-                // Вывод статистики
-                cout << "\nСтатистика сортировки:\n";
-                cout << "Время сортировки: " << duration.count() << " микросекунд\n";
-                cout << "Количество перестановок: " << swaps << endl;
-            }
-            break;
+            saveToFile("sorted.txt", arr);
+            cout << "Массив отсортирован и сохранен\n";
+            cout << "Время сортировки: " << time << " микросекунд\n";
+            cout << "Перестановок: " << swaps << endl;
         }
-        case 4: {
+        else if (choice == 4) {
             if (arr.empty()) {
-                cout << "Массив пуст!\n";
+                cout << "Массив пуст!" << endl;
             }
             else {
                 cout << "Текущий массив: ";
                 for (int num : arr) cout << num << " ";
                 cout << endl;
             }
+        }
+        else if (choice == 5) {
+            cout << "Выход из программы..." << endl;
             break;
         }
-        case 5: {
-            cout << "Выход...\n";
-            break;
-        }
-        default: {
-            cout << "Неверный выбор!\n";
+        else {
+            cout << "Неверный выбор!" << endl;
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
+            while (cin.get() != '\n'); // Очистка буфера ввода
         }
-        }
-    } while (choice != 5);
+    }
 
     return 0;
 }
