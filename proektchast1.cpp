@@ -76,10 +76,25 @@ vector<int> generateRandomArray(int size, int minVal, int maxVal) {
     return arr;
 }
 
+void showAuthorsInfo() {
+    cout << "====================================" << endl;
+    cout << "       Шейкерная сортировка" << endl;
+    cout << "====================================" << endl;
+    cout << "Выполнили работу:" << endl;
+    cout << "1. Хмельков Максим" << endl;
+    cout << "2. Путютин Сергей" << endl;
+    cout << "3. Соколов Олег" << endl;
+    cout << "Группа: 24ВВВ1" << endl;
+    cout << "Бригада: №2" << endl;
+    cout << "====================================" << endl << endl;
+}
+
 int main() {
     setlocale(0, ""); // русский язык
     vector<int> arr;
     int choice;
+
+    showAuthorsInfo(); // Показываем информацию об авторах
 
     while (true) {
         cout << "\nМеню шейкерной сортировки:\n";
