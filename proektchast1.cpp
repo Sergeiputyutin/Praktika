@@ -64,18 +64,26 @@ void cocktailSort(vector<int>& arr, int& comparisons, int& swaps) {
     }
 }
 
-// Генерация случайного массива
+
 vector<int> generateRandomArray(int size, int minVal, int maxVal) {
     vector<int> arr(size);
     srand(time(0)); // Инициализация генератора случайных чисел
 
     for (int i = 0; i < size; i++) {
-        // Генерация числа в заданном диапазоне
-        arr[i] = minVal + rand() % (maxVal - minVal + 1);
+        // Для больших диапазонов используем другой подход
+        if (maxVal - minVal > RAND_MAX) {
+            // Генерация через два вызова rand() для больших диапазонов
+            long long range = (long long)maxVal - (long long)minVal + 1;
+            long long randomValue = (long long)rand() * RAND_MAX + rand();
+            arr[i] = minVal + (randomValue % range);
+        }
+        else {
+            // Стандартный способ для небольших диапазонов
+            arr[i] = minVal + rand() % (maxVal - minVal + 1);
+        }
     }
     return arr;
 }
-
 void showAuthorsInfo() {
     cout << "====================================" << endl;
     cout << "       Шейкерная сортировка" << endl;
@@ -93,6 +101,8 @@ int main() {
     setlocale(0, ""); // русский язык
     vector<int> arr;
     int choice;
+    string inputFilename = "unsorted.txt";
+    string outputFilename = "sorted.txt";
 
     showAuthorsInfo(); // Показываем информацию об авторах
 
@@ -102,7 +112,8 @@ int main() {
         cout << "2. Сгенерировать случайный массив\n";
         cout << "3. Отсортировать массив\n";
         cout << "4. Показать массив\n";
-        cout << "5. Выход\n";
+        cout << "5. Изменить имена файлов (по умолчанию: unsorted.txt, sorted.txt)\n";
+        cout << "6. Выход\n";
         cout << "Выберите действие: ";
         cin >> choice;
 
@@ -115,7 +126,7 @@ int main() {
             for (int i = 0; i < n; i++) {
                 cin >> arr[i];
             }
-            saveToFile("unsorted.txt", arr);
+            saveToFile(inputFilename, arr);
         }
         else if (choice == 2) {
             int size, minVal, maxVal;
@@ -125,9 +136,15 @@ int main() {
             cin >> minVal;
             cout << "Введите максимальное значение: ";
             cin >> maxVal;
+
+            if (minVal > maxVal) {
+                cout << "Ошибка: минимальное значение больше максимального!" << endl;
+                continue;
+            }
+
             arr = generateRandomArray(size, minVal, maxVal);
             cout << "Массив успешно создан и сохранён в файл." << endl;
-            saveToFile("unsorted.txt", arr);
+            saveToFile(inputFilename, arr);
         }
         else if (choice == 3) {
             if (arr.empty()) {
@@ -144,7 +161,7 @@ int main() {
 
             double time = (double)(end - start) / CLOCKS_PER_SEC; // секунды
 
-            saveToFile("sorted.txt", arr);
+            saveToFile(outputFilename, arr);
             cout << "Массив отсортирован и сохранен\n";
             cout << "Время сортировки: " << time << " секунд\n";
             cout << "Перестановок: " << swaps << endl;
@@ -160,6 +177,15 @@ int main() {
             }
         }
         else if (choice == 5) {
+            cout << "Текущее имя файла для неотсортированного массива: " << inputFilename << endl;
+            cout << "Введите новое имя файла: ";
+            cin >> inputFilename;
+            cout << "Текущее имя файла для отсортированного массива: " << outputFilename << endl;
+            cout << "Введите новое имя файла: ";
+            cin >> outputFilename;
+            cout << "Имена файлов успешно изменены." << endl;
+        }
+        else if (choice == 6) {
             cout << "Выход из программы..." << endl;
             break;
         }
