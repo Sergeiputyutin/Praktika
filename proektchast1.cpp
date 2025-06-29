@@ -126,9 +126,7 @@ int main() {
             cout << "Введите максимальное значение: ";
             cin >> maxVal;
             arr = generateRandomArray(size, minVal, maxVal);
-            cout << "Массив создан: ";
-            for (int num : arr) cout << num << " ";
-            cout << endl;
+            cout << "Массив успешно создан и сохранён в файл." << endl;
             saveToFile("unsorted.txt", arr);
         }
         else if (choice == 3) {
@@ -144,11 +142,11 @@ int main() {
             cocktailSort(arr, comparisons, swaps);
             clock_t end = clock();
 
-            double time = (double)(end - start) / CLOCKS_PER_SEC * 1000000; // микросекунды
+            double time = (double)(end - start) / CLOCKS_PER_SEC; // секунды
 
             saveToFile("sorted.txt", arr);
             cout << "Массив отсортирован и сохранен\n";
-            cout << "Время сортировки: " << time << " микросекунд\n";
+            cout << "Время сортировки: " << time << " секунд\n";
             cout << "Перестановок: " << swaps << endl;
         }
         else if (choice == 4) {
